@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnchorFlow — one thing, calmly</title>
+<style>
+  :root { --bg:#0d1410; --card:#14201a; --line:#23362c; --text:#e7f3ec; --muted:#8fae9d; --accent:#5bbf97; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; padding:24px; line-height:1.6; }
+  .app { max-width:520px; width:100%; }
+  header { text-align:center; margin-bottom:24px; }
+  header h1 { font-size:1.8rem; letter-spacing:.5px; }
+  header p { color:var(--muted); font-size:.92rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:16px; }
+  .step-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.15em; color:var(--accent); margin-bottom:10px; }
+  h2 { font-size:1.2rem; margin-bottom:10px; }
+  input[type=text], textarea { width:100%; background:#0e1813; border:1px solid var(--line); color:var(--text); border-radius:10px; padding:12px; font-family:inherit; font-size:1rem; }
+  textarea { min-height:64px; resize:vertical; }
+  .btn { background:var(--accent); color:#06140d; border:none; border-radius:10px; padding:12px 18px; font-size:1rem; font-weight:600; cursor:pointer; }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:var(--text); font-weight:500; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .ground-list { list-style:none; }
+  .ground-list li { display:flex; align-items:center; gap:10px; padding:8px 0; cursor:pointer; }
+  .ground-list .dot { width:20px; height:20px; border-radius:50%; border:2px solid var(--accent); flex:none; display:flex; align-items:center; justify-content:center; font-size:.8rem; }
+  .ground-list li.done .dot { background:var(--accent); color:#06140d; }
+  .ground-list li.done span { color:var(--muted); text-decoration:line-through; }
+  .timer { text-align:center; }
+  .clock { font-size:3.4rem; font-variant-numeric:tabular-nums; margin:10px 0; }
+  .durs { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
+  .dur { background:#0e1813; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 16px; cursor:pointer; }
+  .dur.active { background:var(--accent); color:#06140d; border-color:var(--accent); }
+  .hide { display:none; }
+  .breath { width:120px; height:120px; border-radius:50%; background:radial-gradient(circle,var(--accent),transparent 70%); margin:0 auto 8px; animation:breathe 8s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{transform:scale(.6);opacity:.5} 50%{transform:scale(1);opacity:1} }
+  .end-opts { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .end-opt { flex:1; min-width:90px; background:#0e1813; border:1px solid var(--line); color:var(--text); border-radius:10px; padding:10px; cursor:pointer; text-align:center; }
+  .end-opt.active { border-color:var(--accent); background:#11241b; }
+  .history { font-size:.86rem; }
+  .hitem { border-bottom:1px solid var(--line); padding:10px 0; }
+  .hitem:last-child { border:none; }
+  .hmeta { color:var(--muted); font-size:.76rem; }
+  .empty { color:var(--muted); text-align:center; padding:14px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>⚓ AnchorFlow</h1>
+    <p>One thing. Grounded. A short block. Closed well.</p>
+  </header>
+
+  <!-- Step 1: task -->
+  <div class="card" id="s-task">
+    <div class="step-label">Step 1 — Anchor</div>
+    <h2>What is the one thing?</h2>
+    <input type="text" id="taskInput" placeholder="e.g. Reply to the school email" autocomplete="off">
+    <div style="height:12px"></div>
+    <button class="btn" id="toGround">Begin →</button>
+  </div>
+
+  <!-- Step 2: grounding -->
+  <div class="card hide" id="s-ground">
+    <div class="step-label">Step 2 — Ground</div>
+    <h2>Settle your body first</h2>
+    <div class="breath"></div>
+    <p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:8px">Breathe with the circle — in as it grows, out as it shrinks.</p>
+    <ul class="ground-list" id="groundList"></ul>
+    <button class="btn" id="toTimer">I'm ready →</button>
+  </div>
+
+  <!-- Step 3: timer -->
+  <div class="card hide timer" id="s-timer">
+    <div class="step-label">Step 3 — Focus</div>
+    <h2 id="timerTask"></h2>
+    <div class="durs" id="durs"></div>
+    <div class="clock" id="clock">10:00</div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="startBtn">Start</button>
+      <button class="btn ghost" id="doneBtn">Finish block</button>
+    </div>
+  </div>
+
+  <!-- Step 4: end -->
+  <div class="card hide" id="s-end">
+    <div class="step-label">Step 4 — Close</div>
+    <h2>How did it go?</h2>
+    <div class="end-opts" id="endOpts"></div>
+    <textarea id="endNote" placeholder="One sentence (optional)…"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn" id="saveBtn">Save & finish</button>
+  </div>
+
+  <!-- History -->
+  <div class="card history">
+    <div class="step-label">Recent sessions</div>
+    <div id="history"></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const KEY='anchorflow_sessions';
+const GROUND=['Take one slow breath','Notice your feet on the floor','Unclench your jaw','Drop your shoulders','Name your next single action'];
+const ENDS=['Done','Still going','Blocked'];
+let dur=10*60, remaining=dur, timerId=null, chosenEnd=null, current={};
+
+// build grounding
+GROUND.forEach((g,i)=>{ const li=document.createElement('li'); li.innerHTML=`<span class="dot">${i+1}</span><span>${g}</span>`; li.onclick=()=>li.classList.toggle('done'); $('groundList').appendChild(li); });
+// build durations
+[5,10,20].forEach(m=>{ const b=document.createElement('button'); b.className='dur'+(m===10?' active':''); b.textContent=m+' min'; b.onclick=()=>{ dur=m*60; remaining=dur; document.querySelectorAll('.dur').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(); }; $('durs').appendChild(b); });
+// build end opts
+ENDS.forEach(e=>{ const d=document.createElement('div'); d.className='end-opt'; d.textContent=e; d.onclick=()=>{ chosenEnd=e; document.querySelectorAll('.end-opt').forEach(x=>x.classList.remove('active')); d.classList.add('active'); }; $('endOpts').appendChild(d); });
+
+function show(id){ ['s-task','s-ground','s-timer','s-end'].forEach(s=>$(s).classList.toggle('hide',s!==id)); }
+function render(){ const m=Math.floor(remaining/60), s=remaining%60; $('clock').textContent=`${m}:${String(s).padStart(2,'0')}`; }
+
+$('toGround').onclick=()=>{ const t=$('taskInput').value.trim(); if(!t){ $('taskInput').focus(); return; } current.task=t; $('timerTask').textContent='🎯 '+t; show('s-ground'); };
+$('toTimer').onclick=()=>{ show('s-timer'); render(); };
+$('startBtn').onclick=()=>{ if(timerId){ clearInterval(timerId); timerId=null; $('startBtn').textContent='Start'; return; } $('startBtn').textContent='Pause'; timerId=setInterval(()=>{ remaining--; render(); if(remaining<=0){ clearInterval(timerId); timerId=null; finish(); } },1000); };
+$('doneBtn').onclick=finish;
+function finish(){ if(timerId){ clearInterval(timerId); timerId=null; } $('startBtn').textContent='Start'; show('s-end'); }
+$('saveBtn').onclick=()=>{
+  const list=load();
+  list.unshift({ task:current.task, outcome:chosenEnd||'Done', note:$('endNote').value.trim(), mins:Math.round((dur-remaining)/60)||Math.round(dur/60), at:new Date().toISOString() });
+  localStorage.setItem(KEY,JSON.stringify(list.slice(0,50)));
+  // reset
+  $('taskInput').value=''; $('endNote').value=''; chosenEnd=null; remaining=dur;
+  document.querySelectorAll('.end-opt').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ground-list li').forEach(x=>x.classList.remove('done'));
+  render(); show('s-task'); renderHistory();
+};
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){ return []; } }
+function renderHistory(){
+  const list=load(), h=$('history');
+  if(!list.length){ h.innerHTML='<div class="empty">No sessions yet — your first focus block will appear here.</div>'; return; }
+  h.innerHTML=list.slice(0,8).map(s=>{ const d=new Date(s.at); return `<div class="hitem"><strong>${esc(s.task)}</strong> — ${s.outcome}<div class="hmeta">${d.toLocaleString()} · ~${s.mins} min${s.note?' · "'+esc(s.note)+'"':''}</div></div>`; }).join('');
+}
+function esc(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+render(); renderHistory();
+</script>
+</body>
+</html>

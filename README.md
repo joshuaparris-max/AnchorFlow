@@ -1,13 +1,40 @@
-# AnchorFlow
+# ⚓ AnchorFlow — Calm Focus Flow
 
-> **Status: Placeholder / experimental idea — recommended for archive.**
+A quiet, single-page app for moving from overwhelm to one finished focus block. Built for
+ADHD-style "too much at once" moments: pick **one thing**, ground your body, work a short
+timer, and close well.
 
-This repository is currently empty. It was created as a placeholder for an idea named "AnchorFlow" and contains no source code yet.
+No accounts, no cloud, no notifications — everything stays in your browser.
 
-## Recommendation
+## The flow
 
-- **Archive this repository** until real source code exists.
-- If active "AnchorFlow" development exists under another account or repository, this repo should be **redirected/archived** in favour of that one.
-- When development starts, replace this README with real documentation: purpose, features, and how to run.
+1. **Anchor** — "What is the one thing?"
+2. **Ground** — breathe with the circle; tick off body cues (breath, feet, jaw, shoulders, next action).
+3. **Focus** — a 5 / 10 / 20-minute timer.
+4. **Close** — mark *Done / Still going / Blocked* and add one sentence.
 
-_No source code is present, so no build or tests apply._
+Sessions are saved to **localStorage** and shown in a recent-history list.
+
+## Run
+
+It's one static file:
+
+```bash
+# just open it
+start index.html        # Windows
+# or serve the folder
+python -m http.server 8000
+```
+
+## Status
+
+See [STATUS.md](STATUS.md). **Working MVP** — full four-step flow with breathing animation,
+timer, and saved history.
+
+## Screenshots
+
+_Add screenshots to `docs/` and link them here (e.g. `docs/flow.png`)._
+
+## Privacy
+
+All data is local to your browser. Nothing is transmitted. Clearing site data erases history.
